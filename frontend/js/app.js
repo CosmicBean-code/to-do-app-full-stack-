@@ -2,7 +2,7 @@
    CONFIGURACIÓN
    Cambia API_URL cuando despliegues el backend.
 ═══════════════════════════════════════════════ */
-const API_URL = "https://to-do-app-full-stack-bqlr.onrender.com/api";
+const API_URL = "https://to-do-app-full-stack-bqlr.onrender.com";
 
 /* ═══════════════════════════════════════════════
    ESTADO DE LA APLICACIÓN
@@ -159,12 +159,12 @@ async function apiFetch(path, options = {}) {
 
 /** GET /api/tasks */
 async function fetchTasks() {
-  return apiFetch("/tasks");
+  return apiFetch("/api/tasks");
 }
 
 /** POST /api/tasks */
 async function createTask(title, description) {
-  return apiFetch("/tasks", {
+  return apiFetch("/api/tasks", {
     method: "POST",
     body: JSON.stringify({ title, description }),
   });
@@ -172,7 +172,7 @@ async function createTask(title, description) {
 
 /** PUT /api/tasks/:id */
 async function updateTask(id, title, description) {
-  return apiFetch(`/tasks/${id}`, {
+  return apiFetch(`/api/tasks/${id}`, {
     method: "PUT",
     body: JSON.stringify({ title, description }),
   });
@@ -180,12 +180,12 @@ async function updateTask(id, title, description) {
 
 /** PATCH /api/tasks/:id/toggle */
 async function toggleTask(id) {
-  return apiFetch(`/tasks/${id}/toggle`, { method: "PATCH" });
+  return apiFetch(`/api/tasks/${id}/toggle`, { method: "PATCH" });
 }
 
 /** DELETE /api/tasks/:id */
 async function deleteTask(id) {
-  return apiFetch(`/tasks/${id}`, { method: "DELETE" });
+  return apiFetch(`/api/tasks/${id}`, { method: "DELETE" });
 }
 
 /* ═══════════════════════════════════════════════
