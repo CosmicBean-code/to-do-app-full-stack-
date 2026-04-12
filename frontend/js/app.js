@@ -2,7 +2,7 @@
    CONFIGURACIÓN
    Cambia API_URL cuando despliegues el backend.
 ═══════════════════════════════════════════════ */
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://to-do-app-full-stack-bqlr.onrender.com/api";
 
 /* ═══════════════════════════════════════════════
    ESTADO DE LA APLICACIÓN
