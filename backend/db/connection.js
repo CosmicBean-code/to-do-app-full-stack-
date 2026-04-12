@@ -14,6 +14,10 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit:    10,   // máximo de conexiones simultáneas
   queueLimit:         0,
+  ssl: {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true // Esto es clave para TiDB
+  }
 });
 
 /* Verificar conexión al iniciar */
