@@ -110,10 +110,8 @@ CREATE TABLE tasks (
 
 ## 7. Challenges & Solutions
 
-| Problem | Cause | Solution |
-|---|---|---|
-| CORS error in production | `FRONTEND_URL` misconfigured | Updated Render env var to exact Vercel URL |
-| Backend not starting on Render | Hardcoded `PORT` | Used `process.env.PORT` |
-| TiDB connection refused | Wrong port (3306 instead of 4000) | Updated `DB_PORT=4000` in env vars |
-| Frontend calling local API | `API_URL` still pointed to `localhost` | Updated to Render public URL before deploy |
-| Render service "sleeping" | Free tier limitation | First request takes ~30s; health check endpoint helps keep it alive |
+| Problem                   | Cause                             | Solution                                                            |
+|---------------------------|-----------------------------------|---------------------------------------------------------------------|
+| CORS error in production  | `FRONTEND_URL` misconfigured      | Updated Render env var to exact Vercel URL                          |
+| TiDB connection refused   | Wrong port (3306 instead of 4000) | Updated `DB_PORT=4000` in env vars                                  |
+| Render service "sleeping" | Free tier limitation              | First request takes ~30s; health check endpoint helps keep it alive |
