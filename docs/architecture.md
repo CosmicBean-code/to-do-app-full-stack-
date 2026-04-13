@@ -1,135 +1,119 @@
-# Documentación Técnica — Todo App
+# Technical Documentation — Todo App
 
-## 1. Justificación de plataformas
+## 1. Platform Selection Justification
 
 ### Frontend → Vercel
-- Deploy automático al hacer push a GitHub (rama `main`).
-- Optimizado para sitios estáticos (HTML/CSS/JS).
-- Tier gratuito sin límite de tiempo.
-- CDN global incluido.
+- Automatic deployment on every push to GitHub (`main` branch).
+- Optimized for static sites (HTML/CSS/JS) — no build step needed.
+- Unlimited free tier with global CDN included.
 
 ### Backend → Render
-- Soporte nativo para Node.js / Express.
-- Lee variables de entorno desde su panel sin configuración extra.
-- Deploy automático desde GitHub.
-- Tier gratuito disponible (el servicio puede tardar ~30s en despertar).
+- Native support for Node.js / Express.
+- Environment variables managed directly from the dashboard.
+- Automatic deployment from GitHub; zero manual server setup.
+- Free tier available (service may take ~30s to wake on first request).
 
-### Base de datos → Railway
-- MySQL administrado, sin configurar servidores.
-- Se conecta directamente al backend de Render mediante variables de entorno.
-- Incluye interfaz gráfica para importar el schema `.sql`.
-- Tier gratuito de $5 USD/mes en créditos.
-
----
-
-## 2. Diagrama de arquitectura
-
-```
-  Usuario (navegador)
-        │
-        │  HTTP/HTTPS
-        ▼
-┌─────────────────┐
-│    FRONTEND      │  Vercel CDN
-│  HTML/CSS/JS    │  (todo-app.vercel.app)
-│  Bootstrap 5    │
-└────────┬────────┘
-         │  fetch() → JSON
-         │  REST API
-         ▼
-┌─────────────────┐
-│    BACKEND       │  Render
-│  Node.js 18+    │  (todo-api.onrender.com)
-│  Express 4      │
-│  CORS / dotenv  │
-└────────┬────────┘
-         │  mysql2 (pool)
-         ▼
-┌─────────────────┐
-│   BASE DE DATOS  │  Railway
-│   MySQL 8        │
-│   tabla: tasks   │
-└─────────────────┘
-```
+### Database → TiDB Cloud
+- Fully managed MySQL-compatible (MySQL 8) serverless database.
+- No server configuration required; credentials available immediately.
+- Supports standard `mysql2` driver — no code changes needed vs. local MySQL.
+- Built-in TLS/SSL encryption on all connections.
+- Free Serverless tier with 25 GB storage and 250M Request Units/month.
+- Advantage over Railway: TiDB Cloud is purpose-built for MySQL workloads, offers better connection pooling, and has a more generous free tier for production use.
 
 ---
 
-## 3. Esquema de la base de datos
+## 2. Architecture Diagram
+
+![Architecture Diagram](diagrams/architecture.png)
+
+---
+
+## 3. Deployment Flow Diagram
+
+![Deployment Flow](diagrams/deployment-flow.png)
+
+---
+
+## 4. Database Schema
 
 ```sql
-tasks
-├── id          INT PK AUTO_INCREMENT
-├── title       VARCHAR(255) NOT NULL
-├── description TEXT
-├── completed   TINYINT(1) DEFAULT 0
-├── created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-└── updated_at  TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+CREATE TABLE tasks (
+  id          INT           NOT NULL AUTO_INCREMENT,
+  title       VARCHAR(255)  NOT NULL,
+  description TEXT,
+  completed   TINYINT(1)    NOT NULL DEFAULT 0,
+  created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+                            ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 ---
 
-## 4. Variables de entorno
+## 5. Environment Variables
 
-| Variable | Descripción | Ejemplo |
+| Variable | Description | Example |
 |---|---|---|
-| `PORT` | Puerto del servidor | `3000` |
-| `FRONTEND_URL` | URL del frontend (CORS) | `https://todo-app.vercel.app` |
-| `DB_HOST` | Host de MySQL | `containers-us.railway.app` |
-| `DB_PORT` | Puerto MySQL | `3306` |
-| `DB_USER` | Usuario MySQL | `root` |
-| `DB_PASSWORD` | Contraseña MySQL | `••••••••` |
-| `DB_NAME` | Nombre de la base | `todo_db` |
+| `PORT` | Server port | `10000` |
+| `FRONTEND_URL` | Frontend URL (CORS) | `https://todo-app.vercel.app` |
+| `DB_HOST` | TiDB Cloud gateway host | `gateway01.us-east-1.prod.aws.tidbcloud.com` |
+| `DB_PORT` | TiDB Cloud port | `4000` |
+| `DB_USER` | Database username | `private` |
+| `DB_PASSWORD` | Database password | `private` |
+| `DB_NAME` | Database name | `todo_db` |
 
 ---
 
-## 5. Pasos de despliegue seguidos
+## 6. Deployment Steps Followed
 
-### Fase 1 — Preparación local
-1. Separar proyecto en `/frontend` y `/backend`.
-2. Verificar que la API y BD funcionan localmente.
-3. Agregar soporte `dotenv` y eliminar valores hardcodeados.
+### Phase 1 — Local Preparation
+1. Project separated into `/frontend` and `/backend`.
+2. Verified API and DB work locally with `.env` file.
+3. Added `dotenv` support; removed all hardcoded credentials.
 
-### Fase 2 — Despliegue del backend (Render)
-1. Crear cuenta en render.com.
-2. New → Web Service → conectar repositorio GitHub.
-3. Build command: `npm install` | Start command: `npm start`.
-4. Agregar variables de entorno en el panel de Render.
-5. Copiar la URL pública del servicio.
+### Phase 2 — Database (TiDB Cloud)
+1. Created account at tidbcloud.com.
+2. Created a new **Serverless** cluster (free tier).
+3. Copied connection credentials from **Connect → General**.
+4. Imported `backend/db/schema.sql` via the **SQL Editor**.
 
-### Fase 3 — Despliegue de la BD (Railway)
-1. Crear cuenta en railway.app.
-2. New Project → Database → MySQL.
-3. Copiar credenciales a las variables de Render.
-4. Importar `backend/db/schema.sql` desde la consola de Railway.
+### Phase 3 — Backend (Render)
+1. Created account at render.com.
+2. New → Web Service → connected GitHub repository.
+3. Root directory: `backend` | Build: `npm install` | Start: `node index.js`.
+4. Added all environment variables in the Render dashboard.
+5. Deployed and copied the public API URL.
 
-### Fase 4 — Conectar backend con BD
-1. Confirmar que las variables de entorno en Render son correctas.
-2. Revisar logs de Render: debe aparecer `✅ Conexión a MySQL establecida`.
+### Phase 4 — Connect Backend to TiDB Cloud
+1. Confirmed env variables are correct in Render.
+2. Verified logs show `✅ MySQL connection established.`
 
-### Fase 5 — Despliegue del frontend (Vercel)
-1. Crear cuenta en vercel.com.
-2. Import Git Repository → seleccionar el repo.
-3. Root directory: `frontend`.
-4. Actualizar `API_URL` en `js/app.js` con la URL de Render.
-5. Verificar que la UI carga y las llamadas a la API funcionan.
+### Phase 5 — Frontend (Vercel)
+1. Created account at vercel.com.
+2. Import Git Repository → selected the repo.
+3. Root Directory: `frontend`.
+4. Updated `API_URL` in `js/app.js` with the Render URL.
+5. Deployed; confirmed UI loads and API calls succeed.
 
-### Fase 6 — Pruebas de integración
-- Crear tarea ✅
-- Leer lista ✅
-- Editar título/descripción ✅
-- Marcar como completada ✅
-- Eliminar ✅
-- Sin errores CORS ✅
-- Sin errores en consola ✅
+### Phase 6 — Integration Testing
+- Create task ✅
+- Read task list ✅
+- Edit title/description ✅
+- Toggle completed ✅
+- Delete task ✅
+- No CORS errors ✅
+- No console errors ✅
 
 ---
 
-## 6. Problemas encontrados y soluciones
+## 7. Challenges & Solutions
 
-| Problema | Causa | Solución |
+| Problem | Cause | Solution |
 |---|---|---|
-| CORS error en producción | `FRONTEND_URL` mal configurado | Actualizar variable en Render con URL exacta de Vercel |
-| Backend no arranca en Render | `PORT` hardcodeado | Usar `process.env.PORT` |
-| BD no conecta | Credenciales incorrectas | Verificar variables de entorno en Render |
-| Frontend llama al API local | `API_URL` apunta a `localhost` | Actualizar con URL pública de Render antes del deploy |
-| Render "duerme" el servicio | Tier gratuito | Primera request tarda ~30s; el health check lo mantiene activo |
+| CORS error in production | `FRONTEND_URL` misconfigured | Updated Render env var to exact Vercel URL |
+| Backend not starting on Render | Hardcoded `PORT` | Used `process.env.PORT` |
+| TiDB connection refused | Wrong port (3306 instead of 4000) | Updated `DB_PORT=4000` in env vars |
+| Frontend calling local API | `API_URL` still pointed to `localhost` | Updated to Render public URL before deploy |
+| Render service "sleeping" | Free tier limitation | First request takes ~30s; health check endpoint helps keep it alive |

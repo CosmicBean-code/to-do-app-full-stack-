@@ -1,20 +1,20 @@
 # 📝 Todo App — Full-Stack
 
-Aplicación de lista de tareas desarrollada como proyecto final de Programación Web.
+Full-stack to-do list application built as a final project for Web Programming.
 
-**Stack:** HTML · CSS · JavaScript · Bootstrap 5 · Node.js · Express.js · MySQL
+**Stack:** HTML · CSS · JavaScript · Bootstrap 5 · Node.js · Express.js · MySQL (TiDB Cloud)
 
 ---
 
-## 🗂 Estructura del proyecto
+## 📁 Project Structure
 
 ```
 todo-app/
-├── frontend/          # Interfaz de usuario estática
+├── frontend/                  # Static user interface
 │   ├── index.html
 │   ├── css/styles.css
 │   └── js/app.js
-├── backend/           # API REST con Express
+├── backend/                   # REST API with Express
 │   ├── index.js
 │   ├── package.json
 │   ├── .env.example
@@ -22,39 +22,44 @@ todo-app/
 │   └── db/
 │       ├── connection.js
 │       └── schema.sql
-├── docs/              # Documentación técnica
+├── docs/
 │   ├── architecture.md
-│   └── deployment.md
+│   └── diagrams/
+│       ├── architecture.png
+│       └── deployment-flow.png
 ├── .gitignore
-└── README.md
+├── README.md
+└── .git
 ```
 
 ---
 
-## ⚙️ Configuración local
+## ⚙️ Local Setup
 
-### 1. Base de datos
-
-```bash
-mysql -u root -p < backend/db/schema.sql
-```
+### 1. Database (TiDB Cloud)
+- Create a free cluster at https://tidbcloud.com
+- Go to Connect → General and copy your credentials
+- Open the SQL Editor and paste the contents of backend/db/schema.sql
 
 ### 2. Backend
 
 ```bash
 cd backend
 cp .env.example .env
-# Edita .env con tus credenciales de MySQL
+# Edit .env with your TiDB Cloud credentials
 npm install
-npm run dev        # desarrollo (nodemon)
-# npm start        # producción
+npm run dev or node index.js
 ```
 
 ### 3. Frontend
 
-Abre `frontend/index.html` con Live Server (VS Code) o cualquier servidor estático.
+Open `frontend/index.html` with Live Server (VS Code) or run:
 
-Asegúrate de que `API_URL` en `js/app.js` apunte a tu backend local:
+```bash
+npx serve frontend/
+```
+
+Make sure `API_URL` in `js/app.js` points to your local backend:
 
 ```js
 const API_URL = "http://localhost:3000/api";
@@ -62,30 +67,24 @@ const API_URL = "http://localhost:3000/api";
 
 ---
 
-## 🌐 URLs en producción
+## 🌐 Production URLs
 
-| Componente | Plataforma | URL |
-|---|---|---|
-| Frontend   | Vercel     | `https://todo-app-[tu-usuario].vercel.app` |
-| Backend    | Render     | `https://todo-app-api.onrender.com` |
-| Base de datos | Railway | Interno (acceso por variables de entorno) |
-
----
-
-## 🔌 Endpoints de la API
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET    | `/api/tasks`          | Listar todas las tareas |
-| GET    | `/api/tasks/:id`      | Obtener una tarea |
-| POST   | `/api/tasks`          | Crear tarea |
-| PUT    | `/api/tasks/:id`      | Editar tarea |
-| PATCH  | `/api/tasks/:id/toggle` | Marcar completada/pendiente |
-| DELETE | `/api/tasks/:id`      | Eliminar tarea |
-| GET    | `/health`             | Estado del servidor |
+| Component  | Platform   | URL                                    |
+|------------|------------|----------------------------------------|
+| Frontend   | Vercel     | https://todo-app-[username].vercel.app |
+| Backend    | Render     | https://todo-app-api.onrender.com      |
+| Database   | TiDB Cloud | Internal (env variables)               |
 
 ---
 
-## 👤 Autor
+## 🔌 API Endpoints
 
-Proyecto académico — Programación Web
+| Method | Route                  | Description                |
+|--------|------------------------|----------------------------|
+| GET    | /api/tasks             | List all tasks             |
+| GET    | /api/tasks/:id         | Get a single task          |
+| POST   | /api/tasks             | Create a new task          |
+| PUT    | /api/tasks/:id         | Update title / description |
+| PATCH  | /api/tasks/:id/toggle  | Toggle completed status    |
+| DELETE | /api/tasks/:id         | Delete a task              |
+| GET    | /health                | Server health check        |
